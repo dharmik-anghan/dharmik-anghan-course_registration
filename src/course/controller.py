@@ -7,12 +7,22 @@ from course.serializers import (
 )
 
 
-def registerTutorCourse(request):
+def update_course_count(id):
+    # Update course count in tutor table
+    query = Course.objects.filter(tutor=id, is_deleted=False)
+    course_count = query.count()
+    course = query.first()
+    course.tutor.course_count = course_count
+    course.tutor.save()
+
+
+def register_tutor_course(request):
     try:
         request.data["tutor"] = request.user.id
         serializer = CourseTutorRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        update_course_count(request.user.id)
         return Response(
             {
                 "message": "course added to the portal success",
@@ -28,7 +38,7 @@ def registerTutorCourse(request):
         )
 
 
-def updateTutorCourse(request, course_id):
+def update_tutor_course(request, course_id):
     try:
         course_data = Course.objects.get(pk=course_id, is_deleted=False)
         serializer = CourseTutorRegistrationSerializer(
@@ -36,6 +46,7 @@ def updateTutorCourse(request, course_id):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        update_course_count(request.user.id)
 
         return Response(
             {
@@ -45,6 +56,11 @@ def updateTutorCourse(request, course_id):
             },
             status=status.HTTP_200_OK,
         )
+    except Course.DoesNotExist:
+        return Response(
+            {"message": "course not found", "status": "error", "status_code": 404},
+            status=404,
+        )
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -52,7 +68,7 @@ def updateTutorCourse(request, course_id):
         )
 
 
-def deleteTutorCource(request, course_id):
+def delete_tutor_cource(request, course_id):
     try:
         course = Course.objects.get(pk=course_id)
         course.is_deleted = True
@@ -65,6 +81,11 @@ def deleteTutorCource(request, course_id):
             },
             status=status.HTTP_200_OK,
         )
+    except Course.DoesNotExist:
+        return Response(
+            {"message": "course not found", "status": "error", "status_code": 404},
+            status=404,
+        )
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -72,17 +93,19 @@ def deleteTutorCource(request, course_id):
         )
 
 
-def getCoursesDetails(request, course_id):
+def get_courses_details(request, course_id):
     try:
         if course_id:
             course = Course.objects.get(
                 pk=request.parser_context.get("kwargs").get("course_id"),
                 is_deleted=False,
             )
-            serializer = CourseDetailsSerializer(course)
+            serializer = CourseDetailsSerializer(course, context={"request": request})
         else:
             all_courses = Course.objects.filter(is_deleted=False).all()
-            serializer = CourseDetailsSerializer(all_courses, many=True)
+            serializer = CourseDetailsSerializer(
+                all_courses, context={"request": request}, many=True
+            )
 
         return Response(
             {
@@ -92,6 +115,11 @@ def getCoursesDetails(request, course_id):
                 "status_code": 200,
             },
             status=status.HTTP_200_OK,
+        )
+    except Course.DoesNotExist:
+        return Response(
+            {"message": "course not found", "status": "error", "status_code": 404},
+            status=404,
         )
     except Exception as e:
         return Response(
