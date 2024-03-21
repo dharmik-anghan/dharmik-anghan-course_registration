@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "account",
     "tutor_account",
     "course",
+    "student_corner",
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,28 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "logs/django.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "": {"handlers": ["console", "file"], "level": Config.DJANGO_LOG_LEVEL}
+    },
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} ({levelname})- {name}- {message}",
+            "style": "{",
+        }
+    },
 }
 
 PASSWORD_RESET_TIMEOUT = 900  # 900 sec = 15 min
