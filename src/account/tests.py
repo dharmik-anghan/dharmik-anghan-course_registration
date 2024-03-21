@@ -1,79 +1,85 @@
+from django.test import TestCase
+from rest_framework.test import APIClient
 from rest_framework import status
-from django.urls import include, path, reverse
-from rest_framework.test import APITestCase, URLPatternsTestCase, force_authenticate
-
 from account.models import User
+from rest_framework_simplejwt.tokens import AccessToken
 
 
-class AccountTests(APITestCase, URLPatternsTestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            first_name="test",
-            last_name="test",
-            password="testpassword",
-            tc=True,
-        )
-        self.user.save()
-
-    urlpatterns = [
-        path("api/user/", include("account.urls")),
-    ]
-
-    def test_register_account(self):
-        """
-        Ensure we can create a new account object.
-        """
+class UserRegistrationTestCase(TestCase):
+    def test_user_registration_success(self):
+        client = APIClient()
         data = {
-            "email": "dharmikanghan02@gmail.com",
-            "first_name": "dharmik",
-            "last_name": "anghan",
-            "password": 1234,
-            "confirm_password": 1234,
+            "email": "test@test.com",
+            "first_name": "test",
+            "last_name": "test",
+            "password": 123456,
+            "confirm_password": 123456,
             "tc": True,
         }
-        url = reverse("register")
-        response = self.client.post(url, data=data, format="json")
+        response = client.post("/api/user/register/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["message"], "User Registration Success")
+        self.assertEqual(response.data["status"], "success")
+        self.assertEqual(response.data["status_code"], 201)
 
-    def test_login_account_success(self):
-        """
-        Ensure we can create a new account object.
-        """
-        data = {"email": "test@example.com", "password": "testpassword"}
-        url = reverse("login")  # Assuming your login endpoint is named 'login'
-        response = self.client.post(url, data=data, format="json")
+    def test_user_registration_error(self):
+        client = APIClient()
+        data = {
+            "email": "test@test.com",
+            "first_name": "test",
+            "last_name": "test",
+            "password": 123456,
+            "confirm_password": 123456,
+        }
+        response = client.post("/api/user/register/", data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Check response
-        self.assertEqual(
-            response.status_code, status.HTTP_200_OK
-        )  # Assuming successful login returns 200 OK
-        self.assertIn("token", response.data)
 
-    def test_login_account_error(self):
-        """
-        Ensure we can create a new account object.
-        """
-        data = {"email": "est@example.com", "password": "testpassword"}
-        url = reverse("login")  # Assuming your login endpoint is named 'login'
-        response = self.client.post(url, data=data, format="json")
+class UserLoginTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="testuser@test.com",
+            password="testpassword",
+            first_name="first_name",
+            last_name="last_name",
+            confirm_password="testpassword",
+            tc=True,
+        )
 
-        # Check response
-        self.assertEqual(
-            response.status_code, status.HTTP_404_NOT_FOUND
-        )  # Assuming successful login returns 200 OK
-        self.assertIn("errors", response.data)
+    def test_user_login_success(self):
+        client = APIClient()
+        data = {"email": "testuser@test.com", "password": "testpassword"}
+        response = client.post("/api/user/login/", data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(response.data["message"], "User Login Success")
 
-    def test_profile_view_success(self):
-        """
-        Ensure we can create a new account object.
-        """
-        url = reverse("profile")  # Assuming your login endpoint is named 'login'
-        response = self.client.get(url)
+    def test_user_login_error(self):
+        client = APIClient()
+        data = {"email": "testuser@test.com", "password": "testpasssword"}
+        response = client.post("/api/user/login/", data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        # Check response
-        self.assertEqual(
-            response.status_code, status.HTTP_404_NOT_FOUND
-        )  # Assuming successful login returns 200 OK
-        self.assertIn("errors", response.data)
+
+class UserProfileTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="testuser@test.com",
+            password="testpassword",
+            first_name="first_name",
+            last_name="last_name",
+            confirm_password="testpassword",
+            tc=True,
+        )
+        self.token = AccessToken.for_user(self.user)
+
+    def test_user_profile_unauthenticated(self):
+        client = APIClient()
+        response = client.get("/api/user/profile/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_user_profile_authenticated(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = client.get("/api/user/profile/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "User Found Success")

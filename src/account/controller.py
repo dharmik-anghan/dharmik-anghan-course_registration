@@ -16,7 +16,7 @@ from account.serializers import (
 )
 
 
-def userRegistration(request):
+def user_registration(request):
     try:
         serializer = UserRegisterSerializer(data=request.data)
 
@@ -39,7 +39,7 @@ def userRegistration(request):
         )
 
 
-def userLogin(request):
+def user_login(request):
     try:
         serializer = UserLoginSerializer(data=request.data)
 
@@ -55,7 +55,7 @@ def userLogin(request):
 
             return Response(
                 {
-                    "message": "User Registration Success",
+                    "message": "User Login Success",
                     "data": {"token": token},
                     "status": "success",
                     "status_code": 200,
@@ -71,12 +71,12 @@ def userLogin(request):
         )
 
 
-def getUserProfile(request):
+def get_user_profile(request):
     try:
         serializer = UserProfileSerializer(request.user)
         return Response(
             {
-                "message": "User Registration Success",
+                "message": "User Found Success",
                 "data": {"user": serializer.data},
                 "status": "success",
                 "status_code": 200,
@@ -90,7 +90,7 @@ def getUserProfile(request):
         )
 
 
-def userChangePassword(request):
+def user_change_password(request):
     try:
         user = authenticate(
             email=request.user.email, password=request.data["old_password"]
@@ -117,7 +117,7 @@ def userChangePassword(request):
         )
 
 
-def sentResetPasswordEmail(request):
+def sent_reset_password_email(request):
     try:
         serializer = SentResetPasswordEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -136,7 +136,7 @@ def sentResetPasswordEmail(request):
         )
 
 
-def userPasswordResetView(request, uid, token):
+def user_password_reset(request, uid, token):
     try:
         serializer = UserPasswordResetSerializer(
             data=request.data, context={"uid": uid, "token": token}
@@ -157,7 +157,7 @@ def userPasswordResetView(request, uid, token):
         )
 
 
-def sentAuthLinkEmail(request):
+def sent_auth_link_email(request):
     try:
         serializer = SentAuthLinkEmailSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -177,7 +177,7 @@ def sentAuthLinkEmail(request):
         )
 
 
-def authUserEmail(request, uid, token):
+def auth_user_email(request, uid, token):
     try:
         serializer = AuthUserEmailSerializer(
             data=request.data, context={"uid": uid, "token": token}
