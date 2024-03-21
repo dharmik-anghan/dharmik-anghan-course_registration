@@ -9,7 +9,7 @@ from tutor_account.serializers import (
 )
 
 
-def ApplyForTutorAccount(request):
+def apply_for_tutor_account(request):
     try:
         if Tutor.objects.filter(account=request.user).exists():
             tutor_info = Tutor.objects.get(account=request.user)
@@ -35,6 +35,11 @@ def ApplyForTutorAccount(request):
             },
             status=status.HTTP_201_CREATED,
         )
+    except Tutor.DoesNotExist:
+        return Response(
+            {"message": "tutor not found", "status": "error", "status_code": 404},
+            status=404,
+        )
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -42,7 +47,7 @@ def ApplyForTutorAccount(request):
         )
 
 
-def GetRegisteredTutorRequest(request):
+def get_registered_tutor_request(request):
     try:
         request_id = request.data.get("request_id")
         if request_id:
@@ -69,7 +74,7 @@ def GetRegisteredTutorRequest(request):
         )
 
 
-def UpdateTutorApplicationStatus(request):
+def update_tutor_application_status(request):
     try:
         serializer = UpdateStatusofApplicationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -107,7 +112,11 @@ def UpdateTutorApplicationStatus(request):
             },
             status=status.HTTP_200_OK,
         )
-
+    except Tutor.DoesNotExist:
+        return Response(
+            {"message": "tutor not found", "status": "error", "status_code": 404},
+            status=404,
+        )
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -115,7 +124,7 @@ def UpdateTutorApplicationStatus(request):
         )
 
 
-def GetStatusOfApplication(request):
+def get_status_of_application(request):
     try:
         tutor_info = Tutor.objects.filter(account=request.user).first()
 
