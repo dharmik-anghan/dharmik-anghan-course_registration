@@ -19,7 +19,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "last_name",
             "password",
             "confirm_password",
-            "tc",
+            "term",
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
@@ -94,7 +94,7 @@ class SentResetPasswordEmailSerializer(serializers.Serializer):
             return attrs
 
         else:
-            raise Exception("You are not registred user")
+            raise Exception("User is not registered")
 
 
 class UserPasswordResetSerializer(serializers.Serializer):
@@ -150,7 +150,7 @@ class SentAuthLinkEmailSerializer(serializers.Serializer):
             return attrs
 
         else:
-            raise Exception("You are not registred user")
+            raise Exception("User is not registered")
 
 
 class AuthUserEmailSerializer(serializers.Serializer):

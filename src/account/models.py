@@ -7,10 +7,10 @@ from django.contrib.auth.models import (
 
 class UserManager(BaseUserManager):
     def create_user(
-        self, email, first_name, last_name, tc, password=None, confirm_password=None
+        self, email, first_name, last_name, term, password=None, confirm_password=None
     ):
         """
-        Creates and saves a User with the given email, name, tc and password.
+        Creates and saves a User with the given email, name, term and password.
         """
         if not email:
             raise ValueError("Users must have an email address")
@@ -19,19 +19,19 @@ class UserManager(BaseUserManager):
             email=self.normalize_email(email),
             first_name=first_name,
             last_name=last_name,
-            tc=tc,
+            term=term,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, first_name, last_name, tc, password=None):
+    def create_superuser(self, email, first_name, last_name, term, password=None):
         """
-        Creates and saves a User with the given email, name, tc and password.
+        Creates and saves a User with the given email, name, term and password.
         """
         user = self.create_user(
-            email, password=password, first_name=first_name, last_name=last_name, tc=tc
+            email, password=password, first_name=first_name, last_name=last_name, term=term
         )
         user.is_admin = True
         user.save(using=self._db)
@@ -48,13 +48,13 @@ class User(AbstractBaseUser):
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    tc = models.BooleanField()
+    term = models.BooleanField()
     is_tutor = models.BooleanField(default=False)
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name", "tc"]
+    REQUIRED_FIELDS = ["first_name", "last_name", "term"]
 
     def __str__(self):
         return self.email

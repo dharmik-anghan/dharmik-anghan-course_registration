@@ -12,14 +12,14 @@ class UserModelAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
-        "tc",
+        "term",
         "is_admin",
         "is_tutor",
     ]
     list_filter = ["is_admin"]
     fieldsets = [
         ("User Credentials", {"fields": ["email", "password"]}),
-        ("Personal info", {"fields": ["first_name", "last_name", "tc"]}),
+        ("Personal info", {"fields": ["first_name", "last_name", "term"]}),
         ("Permissions", {"fields": ["is_admin"]}),
     ]
 
@@ -33,7 +33,7 @@ class UserModelAdmin(BaseUserAdmin):
                     "email",
                     "first_name",
                     "last_name",
-                    "tc",
+                    "term",
                     "password1",
                     "confirm_password",
                 ],

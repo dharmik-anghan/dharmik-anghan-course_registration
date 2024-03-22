@@ -39,7 +39,7 @@ class IsCourseOwner(permissions.BasePermission):
         course_info = Course.objects.filter(pk=course_id).first()
 
         if course_info is not None:
-            if course_info.tutor_id != request.user.id:
+            if course_info.tutor.account.id != request.user.id:
                 return False
         user = request.user.is_tutor
         return bool(user and request.user.is_authenticated)

@@ -14,7 +14,7 @@ class UserRegistrationTestCase(TestCase):
             "last_name": "test",
             "password": 123456,
             "confirm_password": 123456,
-            "tc": True,
+            "term": True,
         }
         response = client.post("/api/user/register/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -43,7 +43,7 @@ class UserLoginTestCase(TestCase):
             first_name="first_name",
             last_name="last_name",
             confirm_password="testpassword",
-            tc=True,
+            term=True,
         )
 
     def test_user_login_success(self):
@@ -68,7 +68,7 @@ class UserProfileTestCase(TestCase):
             first_name="first_name",
             last_name="last_name",
             confirm_password="testpassword",
-            tc=True,
+            term=True,
         )
         self.token = AccessToken.for_user(self.user)
 

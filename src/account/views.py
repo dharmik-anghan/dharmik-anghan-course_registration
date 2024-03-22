@@ -74,5 +74,5 @@ class SentAuthLinkEmailView(APIView):
 class AuthUserEmailView(APIView):
 
     def post(self, request, uid, token):
-        message = auth_user_email(request)
+        message = auth_user_email(request, uid, token)
         return message
