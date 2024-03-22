@@ -37,7 +37,7 @@ def apply_for_tutor_account(request):
         )
     except Tutor.DoesNotExist:
         return Response(
-            {"message": "tutor not found", "status": "error", "status_code": 404},
+            {"message": "user not found", "status": "error", "status_code": 404},
             status=404,
         )
     except Exception as e:
@@ -114,7 +114,7 @@ def update_tutor_application_status(request):
         )
     except Tutor.DoesNotExist:
         return Response(
-            {"message": "tutor not found", "status": "error", "status_code": 404},
+            {"message": "user not found", "status": "error", "status_code": 404},
             status=404,
         )
     except Exception as e:

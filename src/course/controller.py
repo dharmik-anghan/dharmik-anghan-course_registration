@@ -5,6 +5,7 @@ from course.serializers import (
     CourseDetailsSerializer,
     CourseTutorRegistrationSerializer,
 )
+from tutor_account.models import Tutor
 
 
 def update_course_count(id):
@@ -18,18 +19,25 @@ def update_course_count(id):
 
 def register_tutor_course(request):
     try:
-        request.data["tutor"] = request.user.id
+        tutor = Tutor.objects.get(account=request.user.id)
+        request.data["tutor"] = tutor.id
         serializer = CourseTutorRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        update_course_count(request.user.id)
+        update_course_count(tutor.id)
         return Response(
             {
                 "message": "course added to the portal success",
+                "data": serializer.data,
                 "status": "success",
                 "status_code": 201,
             },
             status=status.HTTP_201_CREATED,
+        )
+    except Tutor.DoesNotExist:
+        return Response(
+            {"message": "user not found", "status": "error", "status_code": 404},
+            status=404,
         )
     except Exception as e:
         return Response(
@@ -41,16 +49,18 @@ def register_tutor_course(request):
 def update_tutor_course(request, course_id):
     try:
         course_data = Course.objects.get(pk=course_id, is_deleted=False)
+        request.data["tutor"] = course_data.tutor.id
         serializer = CourseTutorRegistrationSerializer(
             course_data, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        update_course_count(request.user.id)
+        update_course_count(course_data.tutor.id)
 
         return Response(
             {
                 "message": "course details updated success",
+                "data": serializer.data,
                 "status": "success",
                 "status_code": 200,
             },
@@ -70,9 +80,10 @@ def update_tutor_course(request, course_id):
 
 def delete_tutor_cource(request, course_id):
     try:
-        course = Course.objects.get(pk=course_id)
+        course = Course.objects.get(pk=course_id, is_deleted=False)
         course.is_deleted = True
         course.save()
+        update_course_count(course.tutor.id)
         return Response(
             {
                 "message": "course deleted success",

@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from account.permissions import IsVerified
 from student_corner.controller import (
-    course_registration,
+    course_purchase,
     course_unregistration,
     get_my_course,
     search_courses,
@@ -13,7 +13,7 @@ class CourseRegistrationView(APIView):
     permission_classes = [IsVerified]
 
     def post(self, request, course_id: int):
-        message = course_registration(request, course_id)
+        message = course_purchase(request, course_id)
         return message
 
 

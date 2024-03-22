@@ -5,9 +5,11 @@ from student_corner.models import CourseRegistration
 
 
 class CourseTutorRegistrationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Course
         fields = [
+            "id",
             "tutor",
             "course_name",
             "course_description",
