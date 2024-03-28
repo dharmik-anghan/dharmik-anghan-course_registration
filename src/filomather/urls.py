@@ -16,12 +16,15 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.conf import settings
 from django.urls import include, path
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/user/", include("account.urls")),
-    path("api/tutor/", include("tutor_account.urls")),
+    path("api/admin/", include("custom_admin.urls")),
+    path("api/instructor/", include("instructor.urls")),
     path("api/course/", include("course.urls")),
-    path("api/student-corner/", include("student_corner.urls")),
-]
+    path("api/student/", include("student.urls")),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

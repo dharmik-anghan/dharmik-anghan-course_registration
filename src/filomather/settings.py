@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from config import Config
 from pathlib import Path
 from datetime import timedelta
@@ -27,7 +28,7 @@ SECRET_KEY = Config.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -42,9 +43,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "account",
-    "tutor_account",
+    "instructor",
     "course",
-    "student_corner",
+    "student",
 ]
 
 MIDDLEWARE = [
@@ -59,6 +60,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "filomather.urls"
 AUTH_USER_MODEL = "account.User"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 
 TEMPLATES = [
     {
