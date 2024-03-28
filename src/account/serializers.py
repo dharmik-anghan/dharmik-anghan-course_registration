@@ -1,16 +1,19 @@
 from account.utils import Util
-from account.models import User
 from rest_framework import serializers
+from account.models import User, UserPermission
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 
-class UserRegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(
-        style={"input_type": "password"}, write_only=True
-    )
+class UserPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPermission
+        fields = ["account", "is_staff", "is_verified", "is_instructor"]
 
+
+class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
@@ -18,19 +21,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "password",
-            "confirm_password",
+            "contact_number",
             "term",
         ]
         extra_kwargs = {"password": {"write_only": True}}
 
-    # Validating password and confirm password
     def validate(self, attrs):
-        password = attrs.get("password")
-        confirm_password = attrs.get("confirm_password")
-        if password != confirm_password:
-            raise serializers.ValidationError(
-                "Password and Confirm Password don't match"
-            )
+        term = attrs.get("term")
+        if not term:
+            raise serializers.ValidationError("Accept terms and conditions to proceed")
         return attrs
 
     def create(self, validated_data):
@@ -46,9 +45,30 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    def get_user_permissions(self, obj):
+        request = self.context.get("request")
+        user = request.user
+        permissions = UserPermission.objects.filter(account=user).first()
+        serializer = UserPermissionSerializer(permissions)
+        return serializer.data
+
+    permissions = serializers.SerializerMethodField("get_user_permissions")
+
     class Meta:
         model = User
-        exclude = ["password", "last_login"]
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "contact_number",
+            "created_at",
+            "is_active",
+            "is_admin",
+            "is_deleted",
+            "term",
+            "permissions",
+        ]
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
@@ -68,7 +88,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
         user = self.context.get("user")
         if password != confirm_password:
             raise serializers.ValidationError(
-                "Password and Confirm Password don't match"
+                "password and confirm password don't match"
             )
         user.set_password(password)
         user.save()
@@ -94,7 +114,7 @@ class SentResetPasswordEmailSerializer(serializers.Serializer):
             return attrs
 
         else:
-            raise Exception("User is not registered")
+            raise Exception("user is not registered")
 
 
 class UserPasswordResetSerializer(serializers.Serializer):
@@ -116,19 +136,19 @@ class UserPasswordResetSerializer(serializers.Serializer):
             token = self.context.get("token")
             if password != confirm_password:
                 raise serializers.ValidationError(
-                    "Password and Confirm Password don't match"
+                    "password and confirm password don't match"
                 )
 
             email = smart_str(urlsafe_base64_decode(uid))
             user = User.objects.get(email=email)
             if not PasswordResetTokenGenerator().check_token(user, token):
-                raise Exception("Token is not Valid or Expired")
+                raise Exception("token is not valid or expired")
             user.set_password(password)
             user.save()
             return attrs
         except DjangoUnicodeDecodeError as identifier:
             PasswordResetTokenGenerator().check_token(user, token)
-            raise Exception("Token is not Valid or Expired")
+            raise Exception("token is not valid or expired")
 
 
 class SentAuthLinkEmailSerializer(serializers.Serializer):
@@ -150,7 +170,7 @@ class SentAuthLinkEmailSerializer(serializers.Serializer):
             return attrs
 
         else:
-            raise Exception("User is not registered")
+            raise Exception("user is not registered")
 
 
 class AuthUserEmailSerializer(serializers.Serializer):
@@ -159,17 +179,22 @@ class AuthUserEmailSerializer(serializers.Serializer):
         fields = []
 
     def validate(self, attrs):
+        uid = self.context.get("uid")
+        token = self.context.get("token")
         try:
-            uid = self.context.get("uid")
-            token = self.context.get("token")
             email = smart_str(urlsafe_base64_decode(uid))
             user = User.objects.get(email=email)
+
             if not PasswordResetTokenGenerator().check_token(user, token):
-                raise Exception("Token is not Valid or Expired")
-            if user.is_verified != True:
-                user.is_verified = True
-                user.save()
-            return attrs
-        except DjangoUnicodeDecodeError as identifier:
-            PasswordResetTokenGenerator().check_token(user, token)
-            raise Exception("Token is not Valid or Expired")
+                raise serializers.ValidationError("Token is not valid or expired")
+
+            auth_user = UserPermission.objects.get(account=user)
+
+            if not auth_user.is_verified:
+                auth_user.is_verified = True
+                auth_user.save()
+
+        except (ObjectDoesNotExist, DjangoUnicodeDecodeError):  # Combine exceptions
+            raise serializers.ValidationError("User or token is not valid or expired")
+
+        return attrs

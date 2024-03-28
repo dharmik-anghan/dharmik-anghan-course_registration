@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
+from account.models import User
 from account.utils import Util
 from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from account.serializers import (
+    UserPermissionSerializer,
     AuthUserEmailSerializer,
     SentAuthLinkEmailSerializer,
     SentResetPasswordEmailSerializer,
@@ -24,7 +26,7 @@ def user_registration(request):
         token = Util.get_tokens_for_user(user)
         return Response(
             {
-                "message": "User Registration Success",
+                "message": "user registration success",
                 "data": {"token": token},
                 "status": "success",
                 "status_code": 201,
@@ -54,7 +56,7 @@ def user_login(request):
 
             return Response(
                 {
-                    "message": "User Login Success",
+                    "message": "user login success",
                     "data": {"token": token},
                     "status": "success",
                     "status_code": 200,
@@ -62,7 +64,7 @@ def user_login(request):
                 status=status.HTTP_200_OK,
             )
         else:
-            raise Exception("Email or password is not valid")
+            raise Exception("email or password is not valid")
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -72,10 +74,10 @@ def user_login(request):
 
 def get_user_profile(request):
     try:
-        serializer = UserProfileSerializer(request.user)
+        serializer = UserProfileSerializer(request.user, context={"request": request})
         return Response(
             {
-                "message": "User Found Success",
+                "message": "user found success",
                 "data": {"user": serializer.data},
                 "status": "success",
                 "status_code": 200,
@@ -101,7 +103,7 @@ def user_change_password(request):
             serializer.is_valid(raise_exception=True)
             return Response(
                 {
-                    "message": "Password Changed Success",
+                    "message": "password changed success",
                     "status": "success",
                     "status_code": 200,
                 },
@@ -122,7 +124,7 @@ def sent_reset_password_email(request):
         serializer.is_valid(raise_exception=True)
         return Response(
             {
-                "message": "Password Reset link send. Please check your Email.",
+                "message": "password reset link send. please check your email.",
                 "status": "success",
                 "status_code": 200,
             },
@@ -143,7 +145,7 @@ def user_password_reset(request, uid, token):
         serializer.is_valid(raise_exception=True)
         return Response(
             {
-                "message": "Password Reset Successfully.",
+                "message": "password reset successfully.",
                 "status": "success",
                 "status_code": 200,
             },
@@ -162,7 +164,7 @@ def sent_auth_link_email(request):
         serializer.is_valid(raise_exception=True)
         return Response(
             {
-                "message": "Link Sent Successfully",
+                "message": "link sent successfully",
                 "status": "success",
                 "status_code": 200,
             },
@@ -184,11 +186,20 @@ def auth_user_email(request, uid, token):
         serializer.is_valid(raise_exception=True)
         return Response(
             {
-                "message": "Account Verified Successfully",
+                "message": "account verified successfully",
                 "status": "success",
                 "status_code": 200,
             },
             status=status.HTTP_200_OK,
+        )
+    except User.DoesNotExist:
+        return Response(
+            {
+                "message": "user not found",
+                "status": "error",
+                "status_code": 404,
+            },
+            status=404,
         )
     except Exception as e:
         return Response(

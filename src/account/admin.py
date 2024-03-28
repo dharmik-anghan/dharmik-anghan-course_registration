@@ -1,5 +1,5 @@
 from django.contrib import admin
-from account.models import User
+from account.models import User, UserPermission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
@@ -10,16 +10,17 @@ class UserModelAdmin(BaseUserAdmin):
     list_display = [
         "id",
         "email",
+        "username",
         "first_name",
         "last_name",
         "term",
         "is_admin",
-        "is_tutor",
+        "is_deleted",
     ]
-    list_filter = ["is_admin"]
+    list_filter = ["is_admin", "username"]
     fieldsets = [
         ("User Credentials", {"fields": ["email", "password"]}),
-        ("Personal info", {"fields": ["first_name", "last_name", "term"]}),
+        ("Personal inf", {"fields": ["first_name", "last_name", "term"]}),
         ("Permissions", {"fields": ["is_admin"]}),
     ]
 
@@ -32,18 +33,41 @@ class UserModelAdmin(BaseUserAdmin):
                 "fields": [
                     "email",
                     "first_name",
+                    "username",
                     "last_name",
                     "term",
                     "password1",
-                    "confirm_password",
                 ],
             },
         ),
     ]
-    search_fields = ["email"]
+    search_fields = ["email", "username"]
     ordering = ["email", "id"]
     filter_horizontal = []
-    list_editable = ["is_admin", "is_tutor"]
+    list_editable = ["is_admin", "is_deleted"]
 
 
 admin.site.register(User, UserModelAdmin)
+
+
+class UserPermissionAdmin(admin.ModelAdmin):
+    list_display = [
+        "account",
+        "is_staff",
+        "is_verified",
+        "is_instructor",
+        "created_at",
+    ]
+    list_editable = ["is_staff", "is_verified", "is_instructor"]
+
+    list_filter = [
+        "is_staff",
+        "is_verified",
+        "is_instructor",
+        "created_at",
+    ]
+
+    search_fields = ["account__email"]
+
+
+admin.site.register(UserPermission, UserPermissionAdmin)
