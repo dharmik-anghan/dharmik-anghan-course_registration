@@ -8,7 +8,7 @@ class CourseAdmin(admin.ModelAdmin):
 
     list_display = [
         "id",
-        "tutor",
+        "instructor",
         "course_name",
         "course_price",
         "created_at",
