@@ -19,7 +19,7 @@ class Instructor(models.Model):
     )
     description = models.TextField()
     course_count = models.PositiveIntegerField(default=0)
-    money_earned = models.PositiveBigIntegerField(default=0)
+    money_earned = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     application_status = models.CharField(

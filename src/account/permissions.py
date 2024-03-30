@@ -1,7 +1,7 @@
-from rest_framework import permissions
-from rest_framework.response import Response
-from account.models import UserPermission
 from course.models import Course
+from rest_framework import permissions
+from account.models import UserPermission
+from student.models import CoursePurchase
 
 
 class IsStaffUser(permissions.BasePermission):
@@ -100,3 +100,23 @@ class IsCourseOwnerUser(permissions.BasePermission):
                 return False
         except UserPermission.DoesNotExist or Course.DoesNotExist:
             return False
+
+
+class HasPurchasedCourse(permissions.BasePermission):
+    message = "you can review only purchased course"
+
+    def has_permission(self, request, view):
+        if request.user.is_anonymous:
+            return False
+
+        if request.user.is_admin:
+            return True
+        course_id = request.parser_context.get("kwargs").get("course_id")
+        purchase_info = CoursePurchase.objects.filter(
+            student=request.user, course=course_id, is_registered=True
+        ).exists()
+
+        if purchase_info:
+            return True
+
+        return False

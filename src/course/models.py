@@ -46,5 +46,9 @@ class Course(models.Model):
     language = models.CharField(max_length=50, blank=True)
     discounts = models.FloatField(default=0.0)
 
+    indexes = [
+        models.Index(fields=["instructor"]),
+    ]
+
     def __str__(self):
         return self.course_name
