@@ -50,7 +50,6 @@ class UserManager(BaseUserManager):
         **extra_fields
     ):
         extra_fields.setdefault("is_admin", True)
-        extra_fields.setdefault("is_staff", True)
 
         return self.create_user(
             email,

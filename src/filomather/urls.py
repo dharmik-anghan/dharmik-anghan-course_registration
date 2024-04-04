@@ -29,3 +29,7 @@ urlpatterns = [
     path("api/student/", include("student.urls")),
     path("api/review/", include("review.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+admin.site.site_header = "Course API Portal Admin"
+admin.site.site_title = "Course App Admin Portal"
+admin.site.index_title = "Welcome to Course Admin Portal"

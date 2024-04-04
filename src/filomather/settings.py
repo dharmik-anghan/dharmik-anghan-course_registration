@@ -133,6 +133,9 @@ DATABASES = {
         "PASSWORD": Config.DB_PASSWORD,
         "HOST": Config.DB_HOST,
         "PORT": Config.DB_PORT,
+        "OPTIONS": {
+            "sql_mode": "traditional",
+        },
     }
 }
 
