@@ -9,12 +9,12 @@ from student.views import (
 
 urlpatterns = [
     path(
-        "register/<int:course_id>",
+        "register/<int:course_id>/",
         CourseRegistrationView.as_view(),
         name="register-for-course",
     ),
     path(
-        "unregister/<int:course_id>",
+        "unregister/<int:course_id>/",
         CourseUnRegistrationView.as_view(),
         name="unregister-for-course",
     ),
@@ -24,7 +24,7 @@ urlpatterns = [
         name="mycourses",
     ),
     path(
-        "mycourses/<int:course_id>",
+        "mycourses/<int:course_id>/",
         EnrolledCourseView.as_view(),
         name="mycourses-for-course",
     ),

@@ -49,10 +49,6 @@ class AcceptInstructorAccountRequestView(APIView):
 class AddCategoryView(APIView):
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
-        message = CourseCategoryController.get_category(request)
-        return message
-
     def post(self, request):
         message = CourseCategoryController.add_category(request)
         return message

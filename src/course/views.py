@@ -1,7 +1,8 @@
-from account.permissions import IsCourseOwnerUser, IsInstructorUser
+from account.permissions import IsCourseOwnerUser, IsInstructorUser, IsVerifiedUser
 from rest_framework.views import APIView
 from course.controller import (
     delete_cource,
+    get_categories,
     get_courses_details,
     register_for_course,
     update_course,
@@ -36,4 +37,12 @@ class GetCourseDetailsView(APIView):
 
     def get(self, request, course_id=None):
         message = get_courses_details(request, course_id)
+        return message
+
+
+class GetCategoriesView(APIView):
+    permission_classes = [IsVerifiedUser]
+
+    def get(self, request):
+        message = get_categories()
         return message

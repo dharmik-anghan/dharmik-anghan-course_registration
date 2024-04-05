@@ -1,7 +1,8 @@
-from datetime import datetime, timezone
 from account.models import User
 from account.utils import Util
 from rest_framework import status
+from rest_framework import serializers
+from datetime import datetime, timezone
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from account.serializers import (
@@ -14,6 +15,7 @@ from account.serializers import (
     UserPasswordResetSerializer,
     UserProfileSerializer,
     UserRegisterSerializer,
+    UserUpdateSerializer,
 )
 
 
@@ -32,6 +34,37 @@ def user_registration(request):
                 "status_code": 201,
             },
             status=status.HTTP_201_CREATED,
+        )
+    except Exception as e:
+        return Response(
+            {"message": f"{str(e)}", "status": "error", "status_code": 400},
+            status=400,
+        )
+
+
+def user_update_profile(request):
+    try:
+        user = User.objects.get(pk=request.user.id)
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {
+                "message": "user updated success",
+                "status": "success",
+                "status_code": 200,
+            },
+            status=200,
+        )
+    except User.DoesNotExist:
+        return Response(
+            {
+                "message": "user not found",
+                "status": "error",
+                "status_code": 404,
+            },
+            status=404,
         )
     except Exception as e:
         return Response(
@@ -111,6 +144,15 @@ def user_change_password(request):
             )
         else:
             raise Exception("Old password does not match")
+    except serializers.ValidationError:
+        return Response(
+            {
+                "message": "new password and confirm password don't match",
+                "status": "error",
+                "status_code": 401,
+            },
+            status=401,
+        )
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
@@ -200,6 +242,16 @@ def auth_user_email(request, uid, token):
                 "status_code": 404,
             },
             status=404,
+        )
+
+    except serializers.ValidationError:
+        return Response(
+            {
+                "message": "Token is not valid or expired",
+                "status": "error",
+                "status_code": 401,
+            },
+            status=401,
         )
     except Exception as e:
         return Response(

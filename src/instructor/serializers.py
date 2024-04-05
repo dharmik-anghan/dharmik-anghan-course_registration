@@ -2,6 +2,12 @@ from instructor.models import Instructor, Qualification
 from rest_framework import serializers
 
 
+class GetQualificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Qualification
+        fields = ["id", "education"]
+
+
 class InstructorSerializer(serializers.ModelSerializer):
     instructor_email = serializers.CharField(source="instructor.email", read_only=True)
     qualification_education = serializers.CharField(

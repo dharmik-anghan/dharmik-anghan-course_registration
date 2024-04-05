@@ -1,7 +1,12 @@
 from rest_framework import status
-from instructor.models import Instructor
+from instructor.models import Instructor, Qualification
 from rest_framework.response import Response
-from instructor.serializers import InstructorSerializer, RegisterForInstructorSerializer
+from instructor.serializers import (
+    CourseInstructorSerializer,
+    GetQualificationSerializer,
+    InstructorSerializer,
+    RegisterForInstructorSerializer,
+)
 
 
 def apply_for_tutor_account(request):
@@ -20,6 +25,10 @@ def apply_for_tutor_account(request):
         serializer = RegisterForInstructorSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(instructor=request.user)
+
+        tutor_info = Instructor.objects.get(instructor=request.user)
+
+        serializer = CourseInstructorSerializer(tutor_info)
         return Response(
             {
                 "message": "Request for tutor account has been sent",
@@ -47,7 +56,29 @@ def get_status_of_application(request):
 
         return Response(
             {
-                "message": {"user": serializer.data},
+                "message": "status of application",
+                "data": {"user": serializer.data},
+                "status": "success",
+                "status_code": 200,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        return Response(
+            {"message": f"{str(e)}", "status": "error", "status_code": 400},
+            status=400,
+        )
+
+
+def get_qualification_details():
+    try:
+        quali = Qualification.objects.all()
+        serializer = GetQualificationSerializer(quali, many=True)
+        return Response(
+            {
+                "message": "qualifications",
+                "data": serializer.data,
                 "status": "success",
                 "status_code": 200,
             },

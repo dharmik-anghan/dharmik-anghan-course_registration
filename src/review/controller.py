@@ -107,7 +107,6 @@ def delete_review(request, course_id):
         data["course"] = course_id
         data["review_id"] = request.query_params.get("review_id")
 
-        breakpoint()
         review = Review.objects.get(
             pk=data["review_id"], account=data["account"], course=data["course"]
         )
@@ -145,6 +144,8 @@ def get_review(request, course_id):
         data = request.data
         data["course"] = course_id
 
+        Course.objects.get(pk=course_id)
+
         review = Review.objects.filter(course=data["course"]).all()
 
         serializer = GetReviewSerializer(review, many=True)
@@ -157,6 +158,11 @@ def get_review(request, course_id):
                 "status_code": 200,
             },
             status=status.HTTP_200_OK,
+        )
+    except Course.DoesNotExist:
+        return Response(
+            {"message": "cousre not found", "status": "error", "status_code": 404},
+            status=404,
         )
     except Exception as e:
         return Response(

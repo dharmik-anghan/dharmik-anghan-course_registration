@@ -14,12 +14,15 @@ class UserPermissionSerializer(serializers.ModelSerializer):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = [
             "email",
             "first_name",
             "last_name",
+            "username",
             "password",
             "contact_number",
             "term",
@@ -34,6 +37,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
@@ -59,6 +68,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "email",
+            "username",
             "first_name",
             "last_name",
             "contact_number",
@@ -161,7 +171,9 @@ class SentAuthLinkEmailSerializer(serializers.Serializer):
         email = attrs.get("email")
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
-            uid = urlsafe_base64_encode(force_bytes(user.email))
+            if UserPermission.objects.filter(account=user, is_verified=True):
+                raise Exception("user already verified")
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = PasswordResetTokenGenerator().make_token(user)
             link = "http://localhost:3000/api/user/verify/" + uid + "/" + token
             body = "Click Following Link To Verify Your Account " + link
@@ -182,8 +194,8 @@ class AuthUserEmailSerializer(serializers.Serializer):
         uid = self.context.get("uid")
         token = self.context.get("token")
         try:
-            email = smart_str(urlsafe_base64_decode(uid))
-            user = User.objects.get(email=email)
+            id = smart_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
                 raise serializers.ValidationError("Token is not valid or expired")

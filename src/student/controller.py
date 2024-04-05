@@ -54,7 +54,6 @@ def course_purchase(request, course_id):
             data["course"] = course_id
             data["student"] = request.user.id
 
-            breakpoint()
             course_price = course.course_price - (
                 course.course_price * course.discounts * 0.01
             )

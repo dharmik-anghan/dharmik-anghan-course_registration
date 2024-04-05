@@ -9,6 +9,7 @@ from account.controller import (
     user_login,
     user_password_reset,
     user_registration,
+    user_update_profile,
 )
 
 
@@ -17,6 +18,14 @@ class UserRegistrationView(APIView):
 
     def post(self, request):
         message = user_registration(request)
+        return message
+
+
+class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        message = user_update_profile(request)
         return message
 
 

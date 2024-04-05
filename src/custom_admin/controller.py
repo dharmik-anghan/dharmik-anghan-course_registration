@@ -33,7 +33,7 @@ class PermissionController:
                 },
                 status=status.HTTP_200_OK,
             )
-        except User.DoesNotExist:
+        except UserPermission.DoesNotExist:
             return Response(
                 {
                     "message": "user not found",
@@ -165,8 +165,7 @@ class InstructorController:
             reason_for_rejection = serializer.validated_data.get("reason_for_rejection")
 
             instructor = Instructor.objects.get(instructor=instructor_id)
-
-            if instructor.instructor.is_admin != request.user.is_admin:
+            if instructor.instructor.is_admin == True and request.user.is_admin != True:
                 raise Exception(
                     "you don't have admin role. only admin can accept/reject admin application"
                 )
@@ -182,8 +181,10 @@ class InstructorController:
             instructor.accepted_at = datetime.now(timezone.utc)
             instructor.application_status = application_status
 
-            # if application accepted or rejected update permission
-            user_permission = UserPermission.objects.get(account=instructor.id)
+            # if application accepted or rejected update permissionś
+            user_permission = UserPermission.objects.get(
+                account=instructor.instructor.id
+            )
             if application_status == ApplicationStatusEnum.ACCEPTED:
                 user_permission.is_instructor = True
             elif (
@@ -220,25 +221,6 @@ class InstructorController:
 
 
 class CourseCategoryController:
-    @staticmethod
-    def get_category(request):
-        try:
-            categories = Category.objects.all()
-            serializer = CourseCategoryserializer(categories, many=True)
-            return Response(
-                {
-                    "message": "Category 'data",
-                    "data": serializer.data,
-                    "status": "success",
-                    "status_code": 200,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return Response(
-                {"message": f"{str(e)}", "status": "error", "status_code": 400},
-                status=400,
-            )
 
     @staticmethod
     def add_category(request):

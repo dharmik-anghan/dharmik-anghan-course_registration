@@ -9,12 +9,14 @@ from account.views import (
     UserPasswordResetView,
     UserProfileView,
     UserRegistrationView,
+    UserUpdateView,
 )
 
 urlpatterns = [
     path("token/refresh/", jwt_views.TokenRefreshView.as_view(), name="token_refresh"),
     path("register/", UserRegistrationView.as_view(), name="register"),
     path("login/", UserLoginView.as_view(), name="login"),
+    path("update/", UserUpdateView.as_view(), name="update-user"),
     path("profile/", UserProfileView.as_view(), name="profile"),
     path("change-password/", UserChangePasswordView.as_view(), name="change-password"),
     path(

@@ -1,6 +1,5 @@
 from django.urls import path
-
-from instructor.views import RegisterForTutorAccountView
+from instructor.views import GetQualificationView, RegisterForTutorAccountView
 
 
 urlpatterns = [
@@ -8,5 +7,10 @@ urlpatterns = [
         "register/",
         RegisterForTutorAccountView.as_view(),
         name="register-tutor-account",
-    )
+    ),
+    path(
+        "qualification/",
+        GetQualificationView.as_view(),
+        name="get-qualification",
+    ),
 ]

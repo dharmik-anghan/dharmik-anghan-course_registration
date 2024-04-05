@@ -92,7 +92,7 @@ class IsCourseOwnerUser(permissions.BasePermission):
 
             if course_info is not None:
                 if (
-                    course_info.instructor.id == request.user.id
+                    course_info.instructor.instructor == request.user
                     and user_permission.is_instructor
                 ):
                     return True

@@ -1,8 +1,14 @@
-from course.models import Course
+from course.models import Category, Course
 from rest_framework import serializers
 from instructor.models import Instructor
 from instructor.serializers import CourseInstructorSerializer
 from student.models import CoursePurchase
+
+
+class GetCategoriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name"]
 
 
 class GetCourseSerializer(serializers.ModelSerializer):

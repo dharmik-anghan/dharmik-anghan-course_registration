@@ -1,10 +1,11 @@
-from course.models import Course
+from course.models import Category, Course
 from django.db import transaction
 from rest_framework import status
 from instructor.models import Instructor
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
 from course.serializers import (
+    GetCategoriesSerializer,
     GetCourseSerializer,
     RegisterCourseSerializer,
 )
@@ -59,7 +60,7 @@ def update_course(request, course_id):
     try:
         course_data = Course.objects.get(pk=course_id, is_deleted=False)
         serializer = RegisterCourseSerializer(
-            course_data, data=request.data, partial=True
+            course_data, data=request.data, partial=True, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -132,7 +133,7 @@ def get_courses_details(request, course_id):
 
         return Response(
             {
-                "message": "course details succcess",
+                "message": "course details success",
                 "data": serializer.data,
                 "status": "success",
                 "status_code": 200,
@@ -144,6 +145,28 @@ def get_courses_details(request, course_id):
             {"message": "course not found", "status": "error", "status_code": 404},
             status=404,
         )
+    except Exception as e:
+        return Response(
+            {"message": f"{str(e)}", "status": "error", "status_code": 400},
+            status=400,
+        )
+
+
+def get_categories():
+    try:
+        categoeies = Category.objects.all()
+        serializer = GetCategoriesSerializer(categoeies, many=True)
+
+        return Response(
+            {
+                "message": "course categories success",
+                "data": serializer.data,
+                "status": "success",
+                "status_code": 200,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     except Exception as e:
         return Response(
             {"message": f"{str(e)}", "status": "error", "status_code": 400},
